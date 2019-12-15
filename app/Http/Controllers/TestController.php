@@ -18,7 +18,7 @@ class TestController extends Controller
 
     public function index()
     {
-        $this->emailService->send("benben");
+        $this->emailService->send("benben1111111111111111");
         $this->emailService->body("xiaoyan");
     }
 

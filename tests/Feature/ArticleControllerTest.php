@@ -14,13 +14,13 @@ class ArticleControllerTest extends TestCase
 
     public function testStore_HttpAndDataOK()
     {
-        Storage::fake('images');
+        Storage::fake(config("filesystems.default"));
         $response = $this->json('POST', 'articles', [
             "title" => "關於文章",
             "content" => "cccd",
             "category_id" => 47,
             "status" => true,
-            "images" => UploadedFile::fake()->image('avatar.jpg'),
+            "images" => UploadedFile::fake()->image('file.jpg'),
             "tag_ids"  =>   [
                 101,
                 900
@@ -48,13 +48,15 @@ class ArticleControllerTest extends TestCase
 
     public function testUpdate_HttpOk()
     {
+        Storage::fake(config("filesystems.default"));
+        Storage::put("files/dVZiwOcl4mudQTt5LxHjLiE4NLyrjoNDGpwCYRen.jpeg", "132145646546");
         $response = $this->json('PUT', 'articles', [
             "id" => 101,
             "title" => "PHP學習",
             "content" => "cccc",
             "category_id" => 22,
             "status" =>true,
-            "images" =>  "empty",
+            "images" =>  UploadedFile::fake()->image('file.jpg'),
             'tags' => [
                 [
                     "tag_id"    =>  900,
@@ -64,7 +66,9 @@ class ArticleControllerTest extends TestCase
                 ]
             ]
         ]);
-
+        $data = json_decode($response->content(), true);
+        $this->assertNotEmpty($data['images']);
+        Storage::assertMissing('files/dVZiwOcl4mudQTt5LxHjLiE4NLyrjoNDGpwCYRen.jpeg');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -72,7 +76,6 @@ class ArticleControllerTest extends TestCase
                 "title" => "PHP學習",
                 "content" => "cccc",
                 "status" =>true,
-                "images" =>"empty",
                 "category" => [
                     "id"    =>  22
                 ],
@@ -115,6 +118,8 @@ class ArticleControllerTest extends TestCase
 
     public function testUpdateCancelAllTag_HttpAnDataOk()
     {
+        Storage::fake(config("filesystems.default"));
+        Storage::put("files/dVZiwOcl4mudQTt5LxHjLiE4NLyrjoNDGpwCYRen.jpeg", "132145646546");
         $response = $this->json('PUT', 'articles', [
             "id" => 101,
             "title" => "PHP學習",
@@ -134,6 +139,7 @@ class ArticleControllerTest extends TestCase
 
     public function testGet_HttpAndDataOk()
     {
+        Storage::fake(config("filesystems.default"));
         $response = $this->json('GET', 'articles', [
             [
                 'id' => 54,
@@ -143,7 +149,8 @@ class ArticleControllerTest extends TestCase
             ],
 
         ]);
-
+        $data = json_decode($response->content(), true);
+        $this->assertNotEmpty($data['images']);
         $response->assertStatus(200)
             ->assertJson([
                 [
@@ -151,7 +158,6 @@ class ArticleControllerTest extends TestCase
                     "title" =>"PHP",
                     "content" =>"你好啊",
                     "status" =>1,
-                    "images" => UploadedFile::fake()->image('file.jpg'),
                     'category'  => [
                         "id"    =>  22,
                         "name"  =>  "JAVA",
